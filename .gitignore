@@ -1,0 +1,4 @@
+/ppdata/
+.vscode/
+run_bbob
+*.o
