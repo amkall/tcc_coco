@@ -6,8 +6,6 @@
  */
 #include "ecs.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-
 /**
  * The maximal budget for evaluations done by an optimization algorithm equals
  * dimension * BUDGET_MULTIPLIER. Increase the budget multiplier value gradually
@@ -227,69 +225,53 @@ void example_experiment(const char *suite_name, const char *suite_options,
   coco_suite_free(suite);
 }
 
-// TODO: remover apos adaptar codigo para usar FO do problema
-double funcao(double *qualquercoisa, uint t) { return 1.0F; }
+double funcao_objetivo(double *a, uint b) {
+  return 1.0F;
+}
 
-void ecs(size_t problem_dimension, size_t evaluations_remaining, char **argv) {
+void ecs(size_t problem_dimension, size_t evaluations_remaining,
+         uint max_population, uint mutation_likelihood, uint n_clusters,
+         double promiscuous_likelihood, uint roulette, uint seed) {
   Prototipos C;
 
   int numGeracoes, numCruza, bLocTot, bLocOk, nGrupos = 0;
 
   double erro, step, fit, dist;
 
-  int i, j, achou, mutou;
+  int achou, mutou;
+  size_t i, j;
 
   int semente;
 
+  uint steps = 10 * problem_dimension;
+
   double SOLUCAO;
 
-  // max population size (10 - 20 - 60)
-  uint MAXPOP = atoi(argv[5]);
-
-  // mutation likelihood (1 - 100)
-  uint MUTPROB = atof(argv[6]);
-
-  // max clusters (20)
-  uint NUMCLUS = atoi(argv[7]);
-
-  // max steps to perform local search (10 * DIMENSION)
-  uint PASSOS = atoi(argv[8]);
-
-  // promiscuous likelihood (1.6 - 2.6)
-  double PPROMIS = atof(argv[9]);
-
-  // uses roulette wheel selection (0 - false, >= 1 true)
-  uint ROLETA = atoi(argv[10]);
-
-  // execution seed (for repeatability)
-  semente = atoi(argv[11]);
-
-  /* randomico ou nao */
   srand((unsigned)time(0) + semente);
 
-  initPopulation(&P, MAXPOP, problem_dimension);
+  initPopulation(&P, max_population, problem_dimension);
 
-  initClusters(&C, NUMCLUS, problem_dimension);
+  initClusters(&C, n_clusters, problem_dimension);
 
   // TODO: corrigir aqui com limites superiores e inferiores
-  C.limiar = (-100.0F - 100.0F) / (2.0F * pow(NUMCLUS, (1.0F / P.tamInd)));
-  C.densid = (int)PPROMIS * NUMSELS * NUMCRU / NUMCLUS;
+  C.limiar = (-100.0F - 100.0F) / (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
+  C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / n_clusters;
 
-  generateIndividualsPopulation(&P, MAXPOP, problem_dimension, 0, funcao);
+  generateIndividualsPopulation(&P, max_population, problem_dimension, 0,
+                                funcao_objetivo);
 
   erro = (double)max(P.indiv[P.melhor].fit - SOLUCAO - TAXERR, 0.0F);
   achou = (erro <= TAXERR ? TRUE : FALSE);
   bLocTot = bLocOk = 0;
   numGeracoes = 1;
 
-  while (FuncaoTeste.numAval < evaluations_remaining && !achou &&
-         numGeracoes < MAXGER) {
+  while (i < evaluations_remaining && !achou) {
 
     numCruza = NUMCRU;
 
-    while ((!achou) && (numCruza--) &&
-           FuncaoTeste.numAval < evaluations_remaining) {
-      if (ROLETA) {
+    while (!achou && numCruza && i < evaluations_remaining) {
+
+      if (roulette) {
         rouletteSelectionPressure(&P, P.indiv[P.melhor].fit);
       } else {
         P.pai[0] = rand() % P.tamPop;
@@ -298,39 +280,44 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining, char **argv) {
 
       if (updateGrp(&C, &P) >= C.densid) {
         step = PSGRI * C.limiar;
-        PASSOS = problem_dimension;
-        EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step, funcao,
-                        TAXERR / 10.0F, PASSOS, ESCALA, SOLUCAO, problem_dimension);
+        EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step, funcao_objetivo,
+                        TAXERR / 10.0F, steps, ESCALA, SOLUCAO,
+                        problem_dimension);
       }
 
       if (P.pai[0] != P.pai[1])
         CruzaBlend(&P, P.pai[0], P.pai[1], P.pior, BLXALFA);
       else
         P.iguais++;
-      fit = funcao(P.indiv[P.pior].var, P.tamInd);
+
+      fit = funcao_objetivo(P.indiv[P.pior].var, P.tamInd);
+
       if (fit >= P.indiv[P.melhor].fit) {
         mutou = MutaNaoUni(P.indiv[P.pior].var, P.tamInd, P.tamPop, numGeracoes,
-                           MUTNUNI, MUTPROB);
+                           MUTNUNI, mutation_likelihood);
         if (mutou) {
           P.numMuta++;
-          fit = funcao(P.indiv[P.pior].var, P.tamInd);
+          fit = funcao_objetivo(P.indiv[P.pior].var, P.tamInd);
         }
       }
+
       updatePopulation(&P, P.pior, fit, numGeracoes);
+
       erro = (double)max(P.indiv[P.melhor].fit - SOLUCAO - TAXERR, 0.0F);
       achou = (erro <= TAXERR ? TRUE : FALSE);
-    } // while NUM CRUZA
+      numCruza--;
+    }
 
     if (!achou) {
       groupsCoolDown(&C);
       C.numGrp += !C.numGrp;
       C.limiar =
           (-100.00F - 100.0F) / (2.0F * pow((C.numGrp), (1.0F / P.tamInd)));
-      C.densid = (int)PPROMIS * NUMSELS * NUMCRU / (C.numGrp);
+      C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / (C.numGrp);
       nGrupos = C.numGrp;
     }
 
-    numGeracoes++;
+    i++;
   }
 }
 

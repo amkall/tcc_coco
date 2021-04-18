@@ -60,7 +60,7 @@
 #define INFINITO 9999999
 #define PLOTODOS -1
 
-#define max(x, y) (x > y ? x : y)
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #define randi(x, y) (x + ((rand() % 1001 / 1000.) * (y - x)))
 
 struct {
@@ -144,9 +144,87 @@ void initClusters(Prototipos *c, uint n_clusters, uint problem_dimension) {
   c->limiar = 0.0F;
 }
 
+float randgen(float fLlim, float fUlim) {
+  float fRandomVal;
+
+  fRandomVal = rand() % 101 / 100.; // rand entre 0 e 1
+
+  return (fLlim + (float)(fRandomVal * (fUlim - fLlim)));
+}
+
+double DistEucl(double x1[], double x2[], int n) {
+  double dist = 0.0, d;
+  int i;
+
+  dist = 0;
+
+  for (i = 0; i < n; i++) {
+    d = x1[i] - x2[i];
+    dist += d * d;
+  }
+
+  return (dist);
+}
+
+int CorrigeInviavel(double *xr, double linf, double lsup) {
+  if ((*xr) > lsup)
+    *xr = lsup - PREBATI * ((*xr) - lsup) / ((*xr) - linf);
+  else if ((*xr) < linf)
+    *xr = linf + PREBATI * (linf - (*xr)) / (lsup - (*xr));
+  return (1);
+}
+
+double HookExplore(double (*fobj)(double*, uint n), double *xr, double fp, double dx, int n)
+{
+    int i, j;
+    double fr;
+    double linf, lsup, salvo;
+
+    // TODO: corrigir para limites
+    linf = -100.0F;
+    lsup = 100.0F;
+
+    for (i = 0; i < n; i++)
+    {
+        // first direction
+        salvo = xr[i];
+        xr[i] = salvo + dx;
+        // viability
+        CorrigeInviavel(&xr[i], linf, lsup);
+        // evaluate
+        fr = fobj(xr, n);
+        if (fr < fp)
+        {
+            // success
+            fp = fr;
+        }
+        else
+        {
+            // failure: other direction
+            dx = -dx;
+            xr[i] = salvo + dx;
+            // viability
+            CorrigeInviavel(&xr[i], linf, lsup);
+            // evaluate
+            fr = fobj(xr, n);
+            if (fr < fp)
+            {
+                // success
+                fp = fr;
+            }
+            else
+            {
+                // reset direction: ACMO bichado por que houve corre��o
+                xr[i] = salvo;
+            }
+        }
+    }
+    return (fp);
+}
+
 void generateIndividualsPopulation(Populacao *p, uint max_population,
                                    uint problem_dimension, int best,
-                                   double objective_function(double *, uint)) {
+                                   double (*objective_function)(double *, uint)) {
   uint i, j, pior;
   double soma, fit;
 
@@ -392,7 +470,7 @@ int updateGrp(Prototipos *c, Populacao *p) {
   return (maiorCont);
 }
 
-double HookeJeeves(double (*fobj)(double[], int n), double xc[], double fc,
+double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
                    int n, double epsilon, int passos, double scala, double step,
                    uint problem_dimension, double solucao) {
   double linf, lsup, dx, err, fp, inif;
@@ -458,7 +536,7 @@ double HookeJeeves(double (*fobj)(double[], int n), double xc[], double fc,
 
 void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
                      int *bLocTot, double step,
-                     double objective_function(double *, uint), double taxerr,
+                     double (*fobj)(double*, uint n), double taxerr,
                      int passos, double escala, double solucao,
                      uint problem_dimension) {
   int index;
@@ -474,17 +552,17 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
       fitant = C.grupos[index].ponto.fit;
 #else
       // precisa avaliar o centro
-      fitant = objective_function(C->grupos[index].ponto.var, P->tamInd);
+      fitant = fobj(C->grupos[index].ponto.var, P->tamInd);
 #endif
       fitdep =
-          HookeJeeves(funcao, C->grupos[index].ponto.var, fitant, P->tamInd,
+          HookeJeeves(fobj, C->grupos[index].ponto.var, fitant, P->tamInd,
                       taxerr, passos, escala, step, problem_dimension, solucao);
       if (fitdep < P->indiv[P->melhor].fit) {
         memcpy(P->indiv[P->melhor].var, C->grupos[index].ponto.var,
                P->tamInd * sizeof(double));
         P->indiv[P->melhor].fit = fitdep;
         erro = (double)max(P->indiv[P->melhor].fit - solucao, 0.0F);
-        achou = (erro <= taxerr ? TRUE : FALSE);
+        *achou = (erro <= taxerr ? TRUE : FALSE);
       }
       bLocTot++;
       if (fitdep < fitant)
@@ -494,14 +572,6 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
     }
   }
   return;
-}
-
-int CorrigeInviavel(double *xr, double linf, double lsup) {
-  if ((*xr) > lsup)
-    *xr = lsup - PREBATI * ((*xr) - lsup) / ((*xr) - linf);
-  else if ((*xr) < linf)
-    *xr = linf + PREBATI * (linf - (*xr)) / (lsup - (*xr));
-  return (1);
 }
 
 void CruzaBlend(Populacao *p, int pai, int mae, int filho, float alfa) {
