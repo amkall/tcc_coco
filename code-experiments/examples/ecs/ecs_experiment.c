@@ -130,8 +130,8 @@ int main(void) {
    * see http://numbbo.github.io/coco-doc/C/#suite-parameters and
    * http://numbbo.github.io/coco-doc/C/#observer-parameters. */
 
-  example_experiment("bbob", "", "bbob", "result_folder: RS_on_bbob",
-                     random_generator);
+  example_experiment("bbob", "dimensions: 3,5", "bbob",
+                     "result_folder: RS_on_bbob", random_generator);
 
   printf("Done!\n");
   fflush(stdout);
@@ -225,11 +225,10 @@ void example_experiment(const char *suite_name, const char *suite_options,
   coco_suite_free(suite);
 }
 
-double funcao_objetivo(double *a, uint b) {
-  return 1.0F;
-}
+double funcao_objetivo(double *a, uint b) { return 1.0F; }
 
 void ecs(size_t problem_dimension, size_t evaluations_remaining,
+         const double *lower_bounds, const double *upper_bounds,
          uint max_population, uint mutation_likelihood, uint n_clusters,
          double promiscuous_likelihood, uint roulette, uint seed) {
   Prototipos C;
@@ -253,12 +252,13 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
 
   initClusters(&C, n_clusters, problem_dimension);
 
-  // TODO: corrigir aqui com limites superiores e inferiores
-  C.limiar = (-100.0F - 100.0F) / (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
+  C.limiar = (lower_bounds[0] - upper_bounds[0]) /
+             (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
   C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / n_clusters;
 
   generateIndividualsPopulation(&P, max_population, problem_dimension, 0,
-                                funcao_objetivo);
+                                funcao_objetivo, lower_bounds[0],
+                                upper_bounds[0]);
 
   erro = (double)max(P.indiv[P.melhor].fit - SOLUCAO - TAXERR, 0.0F);
   achou = (erro <= TAXERR ? TRUE : FALSE);
@@ -280,13 +280,14 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
 
       if (updateGrp(&C, &P) >= C.densid) {
         step = PSGRI * C.limiar;
-        EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step, funcao_objetivo,
-                        TAXERR / 10.0F, steps, ESCALA, SOLUCAO,
-                        problem_dimension);
+        EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step,
+                        funcao_objetivo, TAXERR / 10.0F, steps, ESCALA, SOLUCAO,
+                        problem_dimension, lower_bounds[0], upper_bounds[0]);
       }
 
       if (P.pai[0] != P.pai[1])
-        CruzaBlend(&P, P.pai[0], P.pai[1], P.pior, BLXALFA);
+        CruzaBlend(&P, P.pai[0], P.pai[1], P.pior, BLXALFA, lower_bounds[0],
+                   upper_bounds[0]);
       else
         P.iguais++;
 
@@ -294,7 +295,8 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
 
       if (fit >= P.indiv[P.melhor].fit) {
         mutou = MutaNaoUni(P.indiv[P.pior].var, P.tamInd, P.tamPop, numGeracoes,
-                           MUTNUNI, mutation_likelihood);
+                           MUTNUNI, mutation_likelihood, lower_bounds[0],
+                           upper_bounds[0]);
         if (mutou) {
           P.numMuta++;
           fit = funcao_objetivo(P.indiv[P.pior].var, P.tamInd);
@@ -311,8 +313,8 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
     if (!achou) {
       groupsCoolDown(&C);
       C.numGrp += !C.numGrp;
-      C.limiar =
-          (-100.00F - 100.0F) / (2.0F * pow((C.numGrp), (1.0F / P.tamInd)));
+      C.limiar = (lower_bounds[0] - upper_bounds[0]) /
+                 (2.0F * pow((C.numGrp), (1.0F / P.tamInd)));
       C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / (C.numGrp);
       nGrupos = C.numGrp;
     }

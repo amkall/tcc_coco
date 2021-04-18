@@ -174,57 +174,49 @@ int CorrigeInviavel(double *xr, double linf, double lsup) {
   return (1);
 }
 
-double HookExplore(double (*fobj)(double*, uint n), double *xr, double fp, double dx, int n)
-{
-    int i, j;
-    double fr;
-    double linf, lsup, salvo;
+double HookExplore(double (*fobj)(double *, uint n), double *xr, double fp,
+                   double dx, int n, const double lower_bound,
+                   const double upper_bound) {
+  int i, j;
+  double fr;
+  double salvo;
 
-    // TODO: corrigir para limites
-    linf = -100.0F;
-    lsup = 100.0F;
-
-    for (i = 0; i < n; i++)
-    {
-        // first direction
-        salvo = xr[i];
-        xr[i] = salvo + dx;
-        // viability
-        CorrigeInviavel(&xr[i], linf, lsup);
-        // evaluate
-        fr = fobj(xr, n);
-        if (fr < fp)
-        {
-            // success
-            fp = fr;
-        }
-        else
-        {
-            // failure: other direction
-            dx = -dx;
-            xr[i] = salvo + dx;
-            // viability
-            CorrigeInviavel(&xr[i], linf, lsup);
-            // evaluate
-            fr = fobj(xr, n);
-            if (fr < fp)
-            {
-                // success
-                fp = fr;
-            }
-            else
-            {
-                // reset direction: ACMO bichado por que houve corre��o
-                xr[i] = salvo;
-            }
-        }
+  for (i = 0; i < n; i++) {
+    // first direction
+    salvo = xr[i];
+    xr[i] = salvo + dx;
+    // viability
+    CorrigeInviavel(&xr[i], lower_bound, upper_bound);
+    // evaluate
+    fr = fobj(xr, n);
+    if (fr < fp) {
+      // success
+      fp = fr;
+    } else {
+      // failure: other direction
+      dx = -dx;
+      xr[i] = salvo + dx;
+      // viability
+      CorrigeInviavel(&xr[i], lower_bound, upper_bound);
+      // evaluate
+      fr = fobj(xr, n);
+      if (fr < fp) {
+        // success
+        fp = fr;
+      } else {
+        // reset direction: ACMO bichado por que houve corre��o
+        xr[i] = salvo;
+      }
     }
-    return (fp);
+  }
+  return (fp);
 }
 
 void generateIndividualsPopulation(Populacao *p, uint max_population,
                                    uint problem_dimension, int best,
-                                   double (*objective_function)(double *, uint)) {
+                                   double (*objective_function)(double *, uint),
+                                   const double lower_bound,
+                                   const double upper_bound) {
   uint i, j, pior;
   double soma, fit;
 
@@ -236,8 +228,7 @@ void generateIndividualsPopulation(Populacao *p, uint max_population,
     // gera individuo e acumula-o no centroide (nao ocorre a divisao - centroide
     // = soma)
     for (j = 0; j < problem_dimension; j++) {
-      // TODO: corrigir para usar limites inferiores e superiores
-      p->indiv[i].var[j] = (double)randgen(-100.0F, 100.0F);
+      p->indiv[i].var[j] = (double)randgen(lower_bound, upper_bound);
       p->centr.var[j] += p->indiv[i].var[j];
     }
     fit = objective_function(p->indiv[i].var, problem_dimension);
@@ -470,10 +461,11 @@ int updateGrp(Prototipos *c, Populacao *p) {
   return (maiorCont);
 }
 
-double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
+double HookeJeeves(double (*fobj)(double *, uint n), double xc[], double fc,
                    int n, double epsilon, int passos, double scala, double step,
-                   uint problem_dimension, double solucao) {
-  double linf, lsup, dx, err, fp, inif;
+                   uint problem_dimension, double solucao,
+                   const double lower_bound, const double upper_bound) {
+  double dx, err, fp, inif;
   static double mdx = 1.0F, melf = 0.0F;
   static int cont = 100;
   int i, m;
@@ -481,9 +473,6 @@ double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
 
   double *xr = (double *)NULL;
   double *xp = (double *)NULL;
-
-  linf = -100.0F;
-  lsup = 100.0F;
 
   xp = coco_allocate_vector(n);
   xr = coco_allocate_vector(n);
@@ -502,7 +491,7 @@ double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
     // Assign base point
     fp = fc;
     memcpy(xr, xc, n * sizeof(double));
-    fp = HookExplore(fobj, xr, fp, dx, n);
+    fp = HookExplore(fobj, xr, fp, dx, n, lower_bound, upper_bound);
     // if it doesnt get into; it must be reduced
     reduz = TRUE;
     while (fp < fc && fabs(fp - fc) > epsilon && fabs(fp - solucao) > epsilon &&
@@ -514,10 +503,10 @@ double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
       memcpy(xc, xr, n * sizeof(double));
       for (i = 0; i < n; i++) {
         xr[i] = xr[i] + (xr[i] - xp[i]);
-        CorrigeInviavel(&xr[i], linf, lsup);
+        CorrigeInviavel(&xr[i], lower_bound, upper_bound);
       }
       fp = fobj(xr, n);
-      fp = HookExplore(fobj, xr, fp, dx, n);
+      fp = HookExplore(fobj, xr, fp, dx, n, lower_bound, upper_bound);
     }
     if (reduz && fabs(fp - solucao) > epsilon) {
       dx = scala * dx;
@@ -536,9 +525,10 @@ double HookeJeeves(double (*fobj)(double*, uint n), double xc[], double fc,
 
 void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
                      int *bLocTot, double step,
-                     double (*fobj)(double*, uint n), double taxerr,
+                     double (*fobj)(double *, uint n), double taxerr,
                      int passos, double escala, double solucao,
-                     uint problem_dimension) {
+                     uint problem_dimension, const double lower_bound,
+                     const double upper_bound) {
   int index;
   double erro, fitant, fitdep;
 
@@ -554,9 +544,9 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
       // precisa avaliar o centro
       fitant = fobj(C->grupos[index].ponto.var, P->tamInd);
 #endif
-      fitdep =
-          HookeJeeves(fobj, C->grupos[index].ponto.var, fitant, P->tamInd,
-                      taxerr, passos, escala, step, problem_dimension, solucao);
+      fitdep = HookeJeeves(fobj, C->grupos[index].ponto.var, fitant, P->tamInd,
+                           taxerr, passos, escala, step, problem_dimension,
+                           solucao, lower_bound, upper_bound);
       if (fitdep < P->indiv[P->melhor].fit) {
         memcpy(P->indiv[P->melhor].var, C->grupos[index].ponto.var,
                P->tamInd * sizeof(double));
@@ -574,7 +564,8 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
   return;
 }
 
-void CruzaBlend(Populacao *p, int pai, int mae, int filho, float alfa) {
+void CruzaBlend(Populacao *p, int pai, int mae, int filho, float alfa,
+                const double lower_bound, const double upper_bound) {
   double a, b, r;
   int i;
 
@@ -587,12 +578,12 @@ void CruzaBlend(Populacao *p, int pai, int mae, int filho, float alfa) {
     p->indiv[filho].var[i] = p->indiv[pai].var[i] +
                              r * (p->indiv[mae].var[i] - p->indiv[pai].var[i]);
     // rebate se invi�vel
-    CorrigeInviavel(&(p->indiv[filho].var[i]), -100.0F, 100.0F);
+    CorrigeInviavel(&(p->indiv[filho].var[i]), lower_bound, upper_bound);
   }
 }
 
 int MutaNaoUni(double *indiv, int tamind, int tampop, int ger, int expo,
-               float pmut) {
+               float pmut, const double lower_bound, const double upper_bound) {
   int mutou = FALSE;
   float fRandVal, fFactor;
   float fNewt, fNewT;
@@ -611,7 +602,7 @@ int MutaNaoUni(double *indiv, int tamind, int tampop, int ger, int expo,
         fFactor = pow((1.0F - (fNewt / fNewT)), expo) * fRandVal;
         if (fFactor < TAXERR / 10.0F)
           fFactor = TAXERR / 10.0F;
-        fFactor = fFactor * (indiv[iIndex] - (-100.0F));
+        fFactor = fFactor * (indiv[iIndex] - lower_bound);
         indiv[iIndex] = indiv[iIndex] - fFactor;
       } else {
         fNewt = ger;
@@ -620,11 +611,11 @@ int MutaNaoUni(double *indiv, int tamind, int tampop, int ger, int expo,
         fFactor = pow((1.0F - (fNewt / fNewT)), expo) * fRandVal;
         if (fFactor < TAXERR / 10.0F)
           fFactor = TAXERR / 10.0F;
-        fFactor = fFactor * (100.0F - indiv[iIndex]);
+        fFactor = fFactor * (upper_bound - indiv[iIndex]);
         indiv[iIndex] = indiv[iIndex] + fFactor;
       }
-    } // if prob
-  }   // for
+    }
+  }
 
   return mutou;
 }
