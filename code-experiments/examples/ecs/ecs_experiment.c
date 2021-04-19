@@ -46,6 +46,15 @@ static void evaluate_function(const double *x, double *y) {
 }
 
 /**
+ * Calls coco_evaluate_function() to evaluate the single objective function
+ * of the problem at the point x and returns y[0].
+ */
+double single_evaluate_function(const double *x, double *y) {
+  coco_evaluate_function(PROBLEM, x, y);
+  return y[0];
+}
+
+/**
  * Calls coco_evaluate_constraint() to evaluate the constraints
  * of the problem at the point x and stores the result in the vector y
  */
@@ -75,6 +84,13 @@ void my_grid_search(evaluate_function_t evaluate_func,
                     const double *lower_bounds, const double *upper_bounds,
                     const size_t number_of_integer_variables,
                     const size_t max_budget);
+
+void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
+         size_t problem_dimension, const size_t number_of_objectives,
+         size_t evaluations_remaining, const double *lower_bounds,
+         const double *upper_bounds, uint max_population,
+         uint mutation_likelihood, uint n_clusters, double ppromis,
+         uint roulette, uint seed);
 
 /* Structure and functions needed for timing the experiment */
 typedef struct {
@@ -131,7 +147,7 @@ int main(void) {
    * http://numbbo.github.io/coco-doc/C/#observer-parameters. */
 
   example_experiment("bbob", "dimensions: 3,5", "bbob",
-                     "result_folder: RS_on_bbob", random_generator);
+                     "result_folder: ECS_on_bbob", random_generator);
 
   printf("Done!\n");
   fflush(stdout);
@@ -170,6 +186,14 @@ void example_experiment(const char *suite_name, const char *suite_options,
   /* Initialize timing */
   timing_data = timing_data_initialize(suite);
 
+  /* ECS params */
+  uint max_pop = 20;
+  uint mutation_likelihood = 2;
+  uint n_clusters = 20;
+  double ppromis = 1.8;
+  uint roulette = 0;
+  uint seed = 1;
+
   /* Iterate over all problems in the suite */
   while ((PROBLEM = coco_suite_get_next_problem(suite, observer)) != NULL) {
 
@@ -193,13 +217,20 @@ void example_experiment(const char *suite_name, const char *suite_options,
 
       /* Call the optimization algorithm for the remaining number of evaluations
        */
-      my_random_search(evaluate_function, evaluate_constraint, dimension,
+      /*my_random_search(evaluate_function, evaluate_constraint, dimension,
                        coco_problem_get_number_of_objectives(PROBLEM),
                        coco_problem_get_number_of_constraints(PROBLEM),
                        coco_problem_get_smallest_values_of_interest(PROBLEM),
                        coco_problem_get_largest_values_of_interest(PROBLEM),
                        coco_problem_get_number_of_integer_variables(PROBLEM),
-                       (size_t)evaluations_remaining, random_generator);
+                       (size_t)evaluations_remaining, random_generator);*/
+
+      ecs(evaluate_function, evaluate_constraint, dimension,
+          coco_problem_get_number_of_objectives(PROBLEM),
+          (size_t)evaluations_remaining,
+          coco_problem_get_smallest_values_of_interest(PROBLEM),
+          coco_problem_get_largest_values_of_interest(PROBLEM), max_pop,
+          mutation_likelihood, n_clusters, ppromis, roulette, seed);
 
       /* Break the loop if the algorithm performed no evaluations or an
        * unexpected thing happened */
@@ -225,12 +256,12 @@ void example_experiment(const char *suite_name, const char *suite_options,
   coco_suite_free(suite);
 }
 
-double funcao_objetivo(double *a, uint b) { return 1.0F; }
-
-void ecs(size_t problem_dimension, size_t evaluations_remaining,
-         const double *lower_bounds, const double *upper_bounds,
-         uint max_population, uint mutation_likelihood, uint n_clusters,
-         double promiscuous_likelihood, uint roulette, uint seed) {
+void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
+         size_t problem_dimension, const size_t number_of_objectives,
+         size_t evaluations_remaining, const double *lower_bounds,
+         const double *upper_bounds, uint max_population,
+         uint mutation_likelihood, uint n_clusters, double ppromis,
+         uint roulette, uint seed) {
   Prototipos C;
 
   int numGeracoes, numCruza, bLocTot, bLocOk, nGrupos = 0;
@@ -244,7 +275,7 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
 
   uint steps = 10 * problem_dimension;
 
-  double SOLUCAO;
+  double *y = coco_allocate_vector(number_of_objectives);
 
   srand((unsigned)time(0) + semente);
 
@@ -252,16 +283,19 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
 
   initClusters(&C, n_clusters, problem_dimension);
 
+  // TODO: pegar otimo do problema
+  double solucao = 0.0F;
+
   C.limiar = (lower_bounds[0] - upper_bounds[0]) /
              (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
-  C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / n_clusters;
+  C.densid = (int)ppromis * NUMSELS * NUMCRU / n_clusters;
 
   generateIndividualsPopulation(&P, max_population, problem_dimension, 0,
-                                funcao_objetivo, lower_bounds[0],
+                                single_evaluate_function, y, lower_bounds[0],
                                 upper_bounds[0]);
 
-  erro = (double)max(P.indiv[P.melhor].fit - SOLUCAO - TAXERR, 0.0F);
-  achou = (erro <= TAXERR ? TRUE : FALSE);
+  achou = test_solution_found(PROBLEM);
+
   bLocTot = bLocOk = 0;
   numGeracoes = 1;
 
@@ -281,8 +315,9 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
       if (updateGrp(&C, &P) >= C.densid) {
         step = PSGRI * C.limiar;
         EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step,
-                        funcao_objetivo, TAXERR / 10.0F, steps, ESCALA, SOLUCAO,
-                        problem_dimension, lower_bounds[0], upper_bounds[0]);
+                        single_evaluate_function, y, TAXERR / 10.0F, steps,
+                        ESCALA, solucao, problem_dimension, lower_bounds[0],
+                        upper_bounds[0]);
       }
 
       if (P.pai[0] != P.pai[1])
@@ -291,7 +326,7 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
       else
         P.iguais++;
 
-      fit = funcao_objetivo(P.indiv[P.pior].var, P.tamInd);
+      fit = single_evaluate_function(P.indiv[P.pior].var, y);
 
       if (fit >= P.indiv[P.melhor].fit) {
         mutou = MutaNaoUni(P.indiv[P.pior].var, P.tamInd, P.tamPop, numGeracoes,
@@ -299,14 +334,14 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
                            upper_bounds[0]);
         if (mutou) {
           P.numMuta++;
-          fit = funcao_objetivo(P.indiv[P.pior].var, P.tamInd);
+          fit = single_evaluate_function(P.indiv[P.pior].var, y);
         }
       }
 
       updatePopulation(&P, P.pior, fit, numGeracoes);
 
-      erro = (double)max(P.indiv[P.melhor].fit - SOLUCAO - TAXERR, 0.0F);
-      achou = (erro <= TAXERR ? TRUE : FALSE);
+      achou = test_solution_found(PROBLEM);
+
       numCruza--;
     }
 
@@ -315,7 +350,7 @@ void ecs(size_t problem_dimension, size_t evaluations_remaining,
       C.numGrp += !C.numGrp;
       C.limiar = (lower_bounds[0] - upper_bounds[0]) /
                  (2.0F * pow((C.numGrp), (1.0F / P.tamInd)));
-      C.densid = (int)promiscuous_likelihood * NUMSELS * NUMCRU / (C.numGrp);
+      C.densid = (int)ppromis * NUMSELS * NUMCRU / (C.numGrp);
       nGrupos = C.numGrp;
     }
 

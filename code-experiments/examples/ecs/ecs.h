@@ -63,6 +63,13 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define randi(x, y) (x + ((rand() % 1001 / 1000.) * (y - x)))
 
+/**
+ * A function type for evaluation functions, where the first argument is the
+ * vector to be evaluated and the second argument the vector to which the
+ * evaluation result is stored.
+ */
+typedef double (*single_evaluate_function_t)(const double *x, double *y);
+
 struct {
   int numAval;
 } FuncaoTeste;
@@ -174,9 +181,9 @@ int CorrigeInviavel(double *xr, double linf, double lsup) {
   return (1);
 }
 
-double HookExplore(double (*fobj)(double *, uint n), double *xr, double fp,
-                   double dx, int n, const double lower_bound,
-                   const double upper_bound) {
+double HookExplore(single_evaluate_function_t single_evaluation_function,
+                   double *y, double *xr, double fp, double dx, int n,
+                   const double lower_bound, const double upper_bound) {
   int i, j;
   double fr;
   double salvo;
@@ -188,7 +195,7 @@ double HookExplore(double (*fobj)(double *, uint n), double *xr, double fp,
     // viability
     CorrigeInviavel(&xr[i], lower_bound, upper_bound);
     // evaluate
-    fr = fobj(xr, n);
+    fr = single_evaluation_function(xr, y);
     if (fr < fp) {
       // success
       fp = fr;
@@ -199,7 +206,7 @@ double HookExplore(double (*fobj)(double *, uint n), double *xr, double fp,
       // viability
       CorrigeInviavel(&xr[i], lower_bound, upper_bound);
       // evaluate
-      fr = fobj(xr, n);
+      fr = single_evaluation_function(xr, y);
       if (fr < fp) {
         // success
         fp = fr;
@@ -212,11 +219,10 @@ double HookExplore(double (*fobj)(double *, uint n), double *xr, double fp,
   return (fp);
 }
 
-void generateIndividualsPopulation(Populacao *p, uint max_population,
-                                   uint problem_dimension, int best,
-                                   double (*objective_function)(double *, uint),
-                                   const double lower_bound,
-                                   const double upper_bound) {
+void generateIndividualsPopulation(
+    Populacao *p, uint max_population, uint problem_dimension, int best,
+    single_evaluate_function_t single_evaluation_function, double *y,
+    const double lower_bound, const double upper_bound) {
   uint i, j, pior;
   double soma, fit;
 
@@ -231,7 +237,7 @@ void generateIndividualsPopulation(Populacao *p, uint max_population,
       p->indiv[i].var[j] = (double)randgen(lower_bound, upper_bound);
       p->centr.var[j] += p->indiv[i].var[j];
     }
-    fit = objective_function(p->indiv[i].var, problem_dimension);
+    fit = single_evaluation_function(p->indiv[i].var, y);
     p->indiv[i].fit = fit;
     p->indiv[i].sel = 0;
     if (fit > p->indiv[pior].fit)
@@ -461,8 +467,9 @@ int updateGrp(Prototipos *c, Populacao *p) {
   return (maiorCont);
 }
 
-double HookeJeeves(double (*fobj)(double *, uint n), double xc[], double fc,
-                   int n, double epsilon, int passos, double scala, double step,
+double HookeJeeves(single_evaluate_function_t single_evaluation_function,
+                   double *y, double xc[], double fc, int n, double epsilon,
+                   int passos, double scala, double step,
                    uint problem_dimension, double solucao,
                    const double lower_bound, const double upper_bound) {
   double dx, err, fp, inif;
@@ -491,7 +498,8 @@ double HookeJeeves(double (*fobj)(double *, uint n), double xc[], double fc,
     // Assign base point
     fp = fc;
     memcpy(xr, xc, n * sizeof(double));
-    fp = HookExplore(fobj, xr, fp, dx, n, lower_bound, upper_bound);
+    fp = HookExplore(single_evaluation_function, y, xr, fp, dx, n, lower_bound,
+                     upper_bound);
     // if it doesnt get into; it must be reduced
     reduz = TRUE;
     while (fp < fc && fabs(fp - fc) > epsilon && fabs(fp - solucao) > epsilon &&
@@ -505,8 +513,10 @@ double HookeJeeves(double (*fobj)(double *, uint n), double xc[], double fc,
         xr[i] = xr[i] + (xr[i] - xp[i]);
         CorrigeInviavel(&xr[i], lower_bound, upper_bound);
       }
-      fp = fobj(xr, n);
-      fp = HookExplore(fobj, xr, fp, dx, n, lower_bound, upper_bound);
+      // TODO: pq sobrescreve fp?
+      fp = single_evaluation_function(xr, y);
+      fp = HookExplore(single_evaluation_function, y, xr, fp, dx, n,
+                       lower_bound, upper_bound);
     }
     if (reduz && fabs(fp - solucao) > epsilon) {
       dx = scala * dx;
@@ -525,10 +535,10 @@ double HookeJeeves(double (*fobj)(double *, uint n), double xc[], double fc,
 
 void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
                      int *bLocTot, double step,
-                     double (*fobj)(double *, uint n), double taxerr,
-                     int passos, double escala, double solucao,
-                     uint problem_dimension, const double lower_bound,
-                     const double upper_bound) {
+                     single_evaluate_function_t single_evaluation_function,
+                     double *y, double taxerr, int passos, double escala,
+                     double solucao, uint problem_dimension,
+                     const double lower_bound, const double upper_bound) {
   int index;
   double erro, fitant, fitdep;
 
@@ -542,11 +552,12 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
       fitant = C.grupos[index].ponto.fit;
 #else
       // precisa avaliar o centro
-      fitant = fobj(C->grupos[index].ponto.var, P->tamInd);
+      fitant = single_evaluation_function(C->grupos[index].ponto.var, y);
 #endif
-      fitdep = HookeJeeves(fobj, C->grupos[index].ponto.var, fitant, P->tamInd,
-                           taxerr, passos, escala, step, problem_dimension,
-                           solucao, lower_bound, upper_bound);
+      fitdep =
+          HookeJeeves(single_evaluation_function, y, C->grupos[index].ponto.var,
+                      fitant, P->tamInd, taxerr, passos, escala, step,
+                      problem_dimension, solucao, lower_bound, upper_bound);
       if (fitdep < P->indiv[P->melhor].fit) {
         memcpy(P->indiv[P->melhor].var, C->grupos[index].ponto.var,
                P->tamInd * sizeof(double));
@@ -661,4 +672,13 @@ void groupsCoolDown(Prototipos *C) {
     }
   }
   return;
+}
+
+int test_solution_found(coco_problem_t *problem) {
+  if ((coco_problem_final_target_hit(problem) &&
+       coco_problem_get_number_of_constraints(problem) == 0)) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
