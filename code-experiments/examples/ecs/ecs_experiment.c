@@ -283,9 +283,6 @@ void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
 
   initClusters(&C, n_clusters, problem_dimension);
 
-  // TODO: pegar otimo do problema
-  double solucao = 0.0F;
-
   C.limiar = (lower_bounds[0] - upper_bounds[0]) /
              (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
   C.densid = (int)ppromis * NUMSELS * NUMCRU / n_clusters;
@@ -315,8 +312,8 @@ void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
       if (updateGrp(&C, &P) >= C.densid) {
         step = PSGRI * C.limiar;
         EstratIIIntenso(&C, &P, &achou, &bLocOk, &bLocTot, step,
-                        single_evaluate_function, y, TAXERR / 10.0F, steps,
-                        ESCALA, solucao, problem_dimension, lower_bounds[0],
+                        single_evaluate_function, PROBLEM, y, TAXERR / 10.0F,
+                        steps, ESCALA, problem_dimension, lower_bounds[0],
                         upper_bounds[0]);
       }
 

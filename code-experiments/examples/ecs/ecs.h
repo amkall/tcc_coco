@@ -467,11 +467,12 @@ int updateGrp(Prototipos *c, Populacao *p) {
   return (maiorCont);
 }
 
-double HookeJeeves(single_evaluate_function_t single_evaluation_function,
+double HookeJeeves(coco_problem_t *problem,
+                   single_evaluate_function_t single_evaluation_function,
                    double *y, double xc[], double fc, int n, double epsilon,
                    int passos, double scala, double step,
-                   uint problem_dimension, double solucao,
-                   const double lower_bound, const double upper_bound) {
+                   uint problem_dimension, const double lower_bound,
+                   const double upper_bound) {
   double dx, err, fp, inif;
   static double mdx = 1.0F, melf = 0.0F;
   static int cont = 100;
@@ -502,7 +503,7 @@ double HookeJeeves(single_evaluate_function_t single_evaluation_function,
                      upper_bound);
     // if it doesnt get into; it must be reduced
     reduz = TRUE;
-    while (fp < fc && fabs(fp - fc) > epsilon && fabs(fp - solucao) > epsilon &&
+    while (fp < fc && fabs(fp - fc) > epsilon && test_solution_found(problem) &&
            FuncaoTeste.numAval < problem_dimension) {
       reduz = FALSE;
       // set base point
@@ -518,7 +519,7 @@ double HookeJeeves(single_evaluate_function_t single_evaluation_function,
       fp = HookExplore(single_evaluation_function, y, xr, fp, dx, n,
                        lower_bound, upper_bound);
     }
-    if (reduz && fabs(fp - solucao) > epsilon) {
+    if (reduz && test_solution_found(problem)) {
       dx = scala * dx;
     }
     // difere do original -- sempre incrementa m
@@ -536,8 +537,8 @@ double HookeJeeves(single_evaluate_function_t single_evaluation_function,
 void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
                      int *bLocTot, double step,
                      single_evaluate_function_t single_evaluation_function,
-                     double *y, double taxerr, int passos, double escala,
-                     double solucao, uint problem_dimension,
+                     coco_problem_t *problem, double *y, double taxerr,
+                     int passos, double escala, uint problem_dimension,
                      const double lower_bound, const double upper_bound) {
   int index;
   double erro, fitant, fitdep;
@@ -554,16 +555,15 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
       // precisa avaliar o centro
       fitant = single_evaluation_function(C->grupos[index].ponto.var, y);
 #endif
-      fitdep =
-          HookeJeeves(single_evaluation_function, y, C->grupos[index].ponto.var,
-                      fitant, P->tamInd, taxerr, passos, escala, step,
-                      problem_dimension, solucao, lower_bound, upper_bound);
+      fitdep = HookeJeeves(problem, single_evaluation_function, y,
+                           C->grupos[index].ponto.var, fitant, P->tamInd,
+                           taxerr, passos, escala, step, problem_dimension,
+                           lower_bound, upper_bound);
       if (fitdep < P->indiv[P->melhor].fit) {
         memcpy(P->indiv[P->melhor].var, C->grupos[index].ponto.var,
                P->tamInd * sizeof(double));
         P->indiv[P->melhor].fit = fitdep;
-        erro = (double)max(P->indiv[P->melhor].fit - solucao, 0.0F);
-        *achou = (erro <= taxerr ? TRUE : FALSE);
+        *achou = test_solution_found(problem);
       }
       bLocTot++;
       if (fitdep < fitant)
