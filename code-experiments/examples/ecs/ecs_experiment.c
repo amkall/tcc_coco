@@ -11,7 +11,7 @@
  * dimension * BUDGET_MULTIPLIER. Increase the budget multiplier value gradually
  * to see how it affects the runtime.
  */
-static const unsigned int BUDGET_MULTIPLIER = 2;
+static const unsigned int BUDGET_MULTIPLIER = 100;
 
 /**
  * The maximal number of independent restarts allowed for an algorithm that
@@ -146,7 +146,7 @@ int main(void) {
    * see http://numbbo.github.io/coco-doc/C/#suite-parameters and
    * http://numbbo.github.io/coco-doc/C/#observer-parameters. */
 
-  example_experiment("bbob", "dimensions: 3,5", "bbob",
+  example_experiment("bbob", "dimensions: 2,3,5,10,20", "bbob",
                      "result_folder: ECS_on_bbob", random_generator);
 
   printf("Done!\n");
@@ -187,10 +187,10 @@ void example_experiment(const char *suite_name, const char *suite_options,
   timing_data = timing_data_initialize(suite);
 
   /* ECS params */
-  uint max_pop = 20;
-  uint mutation_likelihood = 2;
+  uint max_pop = 30;
+  uint mutation_likelihood = 3;
   uint n_clusters = 20;
-  double ppromis = 1.8;
+  double ppromis = 2.2;
   uint roulette = 0;
   uint seed = 1;
 
@@ -283,11 +283,11 @@ void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
 
   initClusters(&C, n_clusters, problem_dimension);
 
-  C.limiar = (lower_bounds[0] - upper_bounds[0]) /
+  C.limiar = (upper_bounds[0] - lower_bounds[0]) /
              (2.0F * pow(n_clusters, (1.0F / P.tamInd)));
   C.densid = (int)ppromis * NUMSELS * NUMCRU / n_clusters;
 
-  generateIndividualsPopulation(&P, max_population, problem_dimension, 0,
+  generateIndividualsPopulation(&P, max_population, problem_dimension,
                                 single_evaluate_function, y, lower_bounds[0],
                                 upper_bounds[0]);
 
@@ -345,7 +345,7 @@ void ecs(evaluate_function_t evaluate_func, evaluate_function_t evaluate_cons,
     if (!achou) {
       groupsCoolDown(&C);
       C.numGrp += !C.numGrp;
-      C.limiar = (lower_bounds[0] - upper_bounds[0]) /
+      C.limiar = (upper_bounds[0] - lower_bounds[0]) /
                  (2.0F * pow((C.numGrp), (1.0F / P.tamInd)));
       C.densid = (int)ppromis * NUMSELS * NUMCRU / (C.numGrp);
       nGrupos = C.numGrp;

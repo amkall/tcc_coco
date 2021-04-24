@@ -159,6 +159,15 @@ float randgen(float fLlim, float fUlim) {
   return (fLlim + (float)(fRandomVal * (fUlim - fLlim)));
 }
 
+int test_solution_found(coco_problem_t *problem) {
+  if ((coco_problem_final_target_hit(problem) &&
+       coco_problem_get_number_of_constraints(problem) == 0)) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 double DistEucl(double x1[], double x2[], int n) {
   double dist = 0.0, d;
   int i;
@@ -220,40 +229,44 @@ double HookExplore(single_evaluate_function_t single_evaluation_function,
 }
 
 void generateIndividualsPopulation(
-    Populacao *p, uint max_population, uint problem_dimension, int best,
+    Populacao *p, uint max_population, uint problem_dimension,
     single_evaluate_function_t single_evaluation_function, double *y,
     const double lower_bound, const double upper_bound) {
-  uint i, j, pior;
-  double soma, fit;
+
+  uint i, j, best_fit, worse_fit;
+  double cum_sum, fit;
 
   // inicializa o centroide
   for (j = 0; j < problem_dimension; j++)
     p->centr.var[j] = 0.0F;
 
-  for (i = 0, soma = 0, pior = 0; i < max_population; i++) {
+  for (i = 0, cum_sum = 0, worse_fit = 0, best_fit = 0; i < max_population; i++) {
     // gera individuo e acumula-o no centroide (nao ocorre a divisao - centroide
     // = soma)
     for (j = 0; j < problem_dimension; j++) {
       p->indiv[i].var[j] = (double)randgen(lower_bound, upper_bound);
       p->centr.var[j] += p->indiv[i].var[j];
     }
+
     fit = single_evaluation_function(p->indiv[i].var, y);
     p->indiv[i].fit = fit;
     p->indiv[i].sel = 0;
-    if (fit > p->indiv[pior].fit)
-      pior = i;
-    if (fit < p->indiv[best].fit)
-      best = i;
-    soma += (fit);
+
+    if (fit > p->indiv[worse_fit].fit)
+      worse_fit = i;
+    if (fit < p->indiv[best_fit].fit)
+      best_fit = i;
+
+    cum_sum += (fit);
   }
   // retira do centroide a parte do pior individuo, antecipando, pois ele sera
   // substituido na primeira atualizacao
   for (j = 0; j < problem_dimension; j++)
-    p->centr.var[j] -= p->indiv[pior].var[j];
+    p->centr.var[j] -= p->indiv[worse_fit].var[j];
 
-  p->sumFit = soma;
-  p->melhor = best;
-  p->pior = pior;
+  p->sumFit = cum_sum;
+  p->melhor = best_fit;
+  p->pior = worse_fit;
   p->media = p->sumFit / p->tamPop;
 }
 
@@ -288,7 +301,7 @@ int updateGrp(Prototipos *c, Populacao *p) {
   double dist, menorDist;
   int maiorCont = 0;
   int numsels = NUMSELS;
-  char pertence;
+  int pertence;
 
   for (i = 0; i < numsels; i++) {
     pertence = FALSE;
@@ -380,7 +393,6 @@ int updateGrp(Prototipos *c, Populacao *p) {
 
         } // auto
 #endif
-
 #ifdef ASCAMINHO
         // ASCAMINHO usa v�rios AAPALFA para gerar v�rios novos centros entre o
         // antigo e o ponto assimilado Ele j� avalia o novo centro. Em Hooke n�o
@@ -545,7 +557,7 @@ void EstratIIIntenso(Prototipos *C, Populacao *P, int *achou, int *bLocOk,
 
   int j;
 
-  for (index = 0; (!achou) && (index < C->posGrp); index++) {
+  for (index = 0; (!*achou) && (index < C->posGrp); index++) {
 
     if (C->grupos[index].conta >= C->densid) {
 #ifdef ASCAMINHO
@@ -672,13 +684,4 @@ void groupsCoolDown(Prototipos *C) {
     }
   }
   return;
-}
-
-int test_solution_found(coco_problem_t *problem) {
-  if ((coco_problem_final_target_hit(problem) &&
-       coco_problem_get_number_of_constraints(problem) == 0)) {
-    return TRUE;
-  } else {
-    return FALSE;
-  }
 }
