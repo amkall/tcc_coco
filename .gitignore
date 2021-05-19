@@ -1,6 +1,5 @@
 /ppdata/
 /exdata/
-.vscode/
 run_bbob
 *.o
 **/__pycache__/**
