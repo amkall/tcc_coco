@@ -1,0 +1,50 @@
+% f evaluations | g evaluations | best noise-free fitness - Fopt (-1.694000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +2.668714155e+01 +9.747141552e+00 +9.747141552e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+2 0 +2.331871327e+01 +6.378713267e+00 +6.378713267e+00 +4.9305e+00 +2.5067e+00 +4.1418e+00 -2.9996e+00 -2.8054e+00
+5 0 +1.872409721e+01 +1.784097214e+00 +1.784097214e+00 +3.0334e+00 -1.8876e+00 +3.3542e+00 -1.0295e+00 -1.3560e+00
+6 0 +1.271282988e+01 -4.227170122e+00 -4.227170122e+00 +4.3270e+00 +8.8501e-01 -4.7000e+00 +4.0776e+00 +3.2858e+00
+10 0 +6.192153573e+00 -1.074784643e+01 -1.074784643e+01 +2.5878e+00 +4.8909e+00 +9.7446e-01 -1.4469e-01 +1.8247e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (1.881000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +7.554084938e+00 +2.636408494e+01 +2.636408494e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (2.731500000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.688902988e+01 +2.900390299e+02 +2.900390299e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+3 0 +4.922268300e+00 +2.780722683e+02 +2.780722683e+02 -3.4268e+00 +2.4548e+00 +2.5192e+00 +4.2967e+00 +3.3926e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (3.718000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +3.440707979e+01 +7.158707979e+01 +7.158707979e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+6 0 +1.420347203e+01 +5.138347203e+01 +5.138347203e+01 +5.6985e-01 +3.1904e+00 +1.7685e+00 +4.2030e-02 -2.8055e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (-1.479000000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.645177782e+01 -1.314482222e+02 -1.314482222e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+3 0 +1.474145299e+01 -1.331585470e+02 -1.331585470e+02 -3.0122e+00 -1.9657e+00 -2.8381e+00 +4.0948e+00 -4.1995e+00
+4 0 +1.362332856e+01 -1.342766714e+02 -1.342766714e+02 +7.6865e-01 +1.5391e+00 -1.3890e+00 +2.9129e+00 +4.4212e-01
+5 0 +1.048640901e+01 -1.374135910e+02 -1.374135910e+02 -5.9100e-01 -6.4671e-01 -2.9448e-01 +6.8907e-01 -1.9994e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (4.817100000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.884784609e+01 +5.005578461e+02 +5.005578461e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+9 0 +1.856128063e+01 +5.002712806e+02 +5.002712806e+02 +3.4929e+00 +3.2840e-01 -4.4766e+00 +8.0051e-01 -4.5967e-01
+% f evaluations | g evaluations | best noise-free fitness - Fopt (-3.646000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +9.679645913e+00 -2.678035409e+01 -2.678035409e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (3.920000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.883092179e+01 +5.803092179e+01 +5.803092179e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+6 0 +1.721836919e+01 +5.641836919e+01 +5.641836919e+01 +1.9443e+00 +1.7945e+00 +1.9261e+00 -1.0396e+00 -3.2370e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (-3.225000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.255272141e+01 -1.969727859e+01 -1.969727859e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+5 0 +9.518820401e+00 -2.273117960e+01 -2.273117960e+01 +4.4488e+00 +6.6855e-02 -5.3823e-01 -7.2317e-01 +8.2579e-01
+% f evaluations | g evaluations | best noise-free fitness - Fopt (3.681200000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.181838941e+01 +3.799383894e+02 +3.799383894e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+3 0 +1.094401495e+01 +3.790640149e+02 +3.790640149e+02 -2.5316e+00 +4.5870e+00 +2.1425e+00 -4.2319e+00 -2.0608e-01
+% f evaluations | g evaluations | best noise-free fitness - Fopt (4.739000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +8.165228910e+00 +5.555522891e+01 +5.555522891e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (-3.428900000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +3.139104561e+01 -3.114989544e+02 -3.114989544e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+5 0 +2.365346577e+01 -3.192365342e+02 -3.192365342e+02 +1.7143e-01 +5.9673e-01 +3.6937e+00 -2.0901e+00 +9.2181e-01
+7 0 +1.478975790e+01 -3.281002421e+02 -3.281002421e+02 -1.8337e+00 -4.7582e+00 +1.2241e+00 +2.7830e-01 +1.5082e+00
+9 0 +1.096820265e+01 -3.319217974e+02 -3.319217974e+02 +1.5499e+00 -1.1549e+00 +4.5075e+00 -4.8321e+00 +2.8808e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (9.102000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +1.631214308e+01 +1.073321431e+02 +1.073321431e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (7.324200000000e+02) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +2.499022759e+01 +7.574102276e+02 +7.574102276e+02 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+5 0 +1.232821514e+01 +7.447482151e+02 +7.447482151e+02 +3.0851e+00 +3.0057e+00 +2.0413e+00 +4.6208e+00 -3.6296e+00
+6 0 +1.108494208e+01 +7.435049421e+02 +7.435049421e+02 -2.8492e-01 +3.1995e+00 -4.8984e-01 +6.2670e-01 -3.4905e+00
+% f evaluations | g evaluations | best noise-free fitness - Fopt (3.542000000000e+01) + sum g_i+ | measured fitness | best measured fitness or single-digit g-values | x1 | x2...
+1 0 +3.624426383e+01 +7.166426383e+01 +7.166426383e+01 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00 +0.0000e+00
+6 0 +2.315549022e+01 +5.857549022e+01 +5.857549022e+01 -1.7208e+00 +1.9600e-01 -4.0526e+00 -1.7405e+00 +4.1391e+00
+8 0 +6.248371161e+00 +4.166837116e+01 +4.166837116e+01 +1.7195e+00 -8.5876e-02 -3.5130e-01 -6.8922e-01 +3.4682e+00

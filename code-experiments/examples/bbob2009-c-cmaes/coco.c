@@ -72,7 +72,7 @@ extern "C" {
  * Automatically updated by do.py.
  */
 /**@{*/
-static const char coco_version[32] = "2.4";
+static const char coco_version[32] = "2.4.11";
 /**@}*/
 
 /***********************************************************************************************************/

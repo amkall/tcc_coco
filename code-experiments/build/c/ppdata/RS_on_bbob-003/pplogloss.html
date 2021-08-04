@@ -1,0 +1,113 @@
+<HTML>
+<HEAD>
+   <META NAME="description" CONTENT="COCO/BBOB figures by function">
+   <META NAME="keywords" CONTENT="COCO, BBOB">
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE> pplogloss </TITLE>
+   <SCRIPT SRC="sorttable.js"></SCRIPT>
+</HEAD>
+<BODY>
+<H1> 
+</H1>
+<H3><a href="index1.html">Overview page</a></H3>
+<H2> ERT loss ratios </H2>
+<p><b>All functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_noiselessall.svg"><IMG SRC="pplogloss_05D_noiselessall.svg" height="160em"></a><a href="pplogloss_20D_noiselessall.svg"><IMG SRC="pplogloss_20D_noiselessall.svg" height="160em"></a></div>
+<p><b><i>f</i><sub>1</sub>&ndash;<i>f</i><sub>24</sub> in 5-D</b>, maxFE/D=2</p>
+<table class="sortable">
+<thead>
+<tr>
+<th>#FEs/D</td>
+<td>best</td>
+<td>10 %</td>
+<td>25 %</td>
+<td>med</td>
+<td>75 %</td>
+<td>90 %</td>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<th>RL<sub>US</sub>/D</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<th sorttable_customkey="2.000000">2</th>
+<td sorttable_customkey="0.740000">0.74</td>
+<td sorttable_customkey="0.985000">0.99</td>
+<td sorttable_customkey="1.185897">1.2</td>
+<td sorttable_customkey="1.857143">1.9</td>
+<td sorttable_customkey="3.333333">3.3</td>
+<td sorttable_customkey="5.000000">5.0</td>
+</tr>
+<tr>
+<th sorttable_customkey="10.000000">10</th>
+<td sorttable_customkey="0.386111">0.39</td>
+<td sorttable_customkey="1.825000">1.8</td>
+<td sorttable_customkey="3.333333">3.3</td>
+<td sorttable_customkey="3.750000">3.8</td>
+<td sorttable_customkey="5.277778">5.3</td>
+<td sorttable_customkey="7.428571">7.4</td>
+</tr>
+</tbody>
+</table>
+<p><b><i>f</i><sub>1</sub>&ndash;<i>f</i><sub>24</sub> in 20-D</b>, maxFE/D=2</p>
+<table class="sortable">
+<thead>
+<tr>
+<th>#FEs/D</td>
+<td>best</td>
+<td>10 %</td>
+<td>25 %</td>
+<td>med</td>
+<td>75 %</td>
+<td>90 %</td>
+</tr>
+</thead>
+<tfoot>
+<tr>
+<th>RL<sub>US</sub>/D</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tfoot>
+<tbody>
+<tr>
+<th sorttable_customkey="2.000000">2</th>
+<td sorttable_customkey="0.940439">0.94</td>
+<td sorttable_customkey="1.000000">1.0</td>
+<td sorttable_customkey="2.613095">2.6</td>
+<td sorttable_customkey="13.333333">13</td>
+<td sorttable_customkey="40.000000">40</td>
+<td sorttable_customkey="40.000000">40</td>
+</tr>
+<tr>
+<th sorttable_customkey="10.000000">10</th>
+<td sorttable_customkey="1.000000">1.0</td>
+<td sorttable_customkey="1.000000">1.0</td>
+<td sorttable_customkey="7.151980">7.2</td>
+<td sorttable_customkey="12.916667">13</td>
+<td sorttable_customkey="66.666667">67</td>
+<td sorttable_customkey="200.000000">2.0e2</td>
+</tr>
+</tbody>
+</table>
+<!--tables-->
+<p/>
+ <span class="roman">ERT</span>&nbsp;loss ratio versus the budget in number of f-evaluations divided by dimension. For each given budget <span class="roman">FEvals</span>, the target value f<sub><span class="roman">t</span></sub>&nbsp;is computed as the best target f-value reached within the budget by the given algorithm. Shown is then the <span class="roman">ERT</span>&nbsp;to reach f<sub><span class="roman">t</span></sub>&nbsp;for the given algorithm or the budget, if the best algorithm from BBOB 2009 reached a better target within the budget, divided by the <span class="roman">ERT</span>&nbsp;of the best algorithm from BBOB 2009 to reach f<sub><span class="roman">t</span></sub>. Line: geometric mean. Box-Whisker error bar: 25-75%-ile with median (box), 10-90%-ile (caps), and minimum and maximum <span class="roman">ERT</span>&nbsp;loss ratio (points). The vertical line gives the maximal number of function evaluations in a single trial in this function subset. See also the following figure for results on each function subgroup.<br />Data produced with COCO v2.4  <div class="p"><!----></div>
+<p/><p/><p><b>Separable functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_separ.svg"><IMG SRC="pplogloss_05D_separ.svg" height="160em"></a><a href="pplogloss_20D_separ.svg"><IMG SRC="pplogloss_20D_separ.svg" height="160em"></a></div><p><b>Misc. moderate functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_lcond.svg"><IMG SRC="pplogloss_05D_lcond.svg" height="160em"></a><a href="pplogloss_20D_lcond.svg"><IMG SRC="pplogloss_20D_lcond.svg" height="160em"></a></div><p><b>Ill-conditioned functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_hcond.svg"><IMG SRC="pplogloss_05D_hcond.svg" height="160em"></a><a href="pplogloss_20D_hcond.svg"><IMG SRC="pplogloss_20D_hcond.svg" height="160em"></a></div><p><b>Multi-modal functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_multi.svg"><IMG SRC="pplogloss_05D_multi.svg" height="160em"></a><a href="pplogloss_20D_multi.svg"><IMG SRC="pplogloss_20D_multi.svg" height="160em"></a></div><p><b>Weak structure functions in 5-D and 20-D</b></p><div><a href="pplogloss_05D_mult2.svg"><IMG SRC="pplogloss_05D_mult2.svg" height="160em"></a><a href="pplogloss_20D_mult2.svg"><IMG SRC="pplogloss_20D_mult2.svg" height="160em"></a></div><p/>
+ <span class="roman">ERT</span>&nbsp;loss ratios (see the previous figure for details).  <div class="p"><!----></div> Each cross (<span style="color:#0000FF">+</span>) represents a single function, the line is the geometric mean.  <div class="p"><!----></div>
+<p/><p/>
+<BR/><BR/><BR/><BR/><BR/>
+</BODY>
+</HTML>

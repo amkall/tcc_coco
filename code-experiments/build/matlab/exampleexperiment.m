@@ -12,7 +12,7 @@ more off; % to get immediate output in Octave
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Experiment Parameters %
 %%%%%%%%%%%%%%%%%%%%%%%%%
-BUDGET_MULTIPLIER = 2; % algorithm runs for BUDGET_MULTIPLIER*dimension funevals
+BUDGET_MULTIPLIER = 100; % algorithm runs for BUDGET_MULTIPLIER*dimension funevals
 NUM_OF_INDEPENDENT_RESTARTS = 1e9; % max. number of independent algorithm
 % restarts; if >0, make sure that the
 % algorithm is not always doing the same thing
@@ -99,7 +99,7 @@ while true
                           cocoProblemGetEvaluationsConstraints(problem);
         
         % start algorithm with remaining number of function evaluations:
-        my_optimizer(problem,...
+        RealCodeGA(problem,...
             cocoProblemGetSmallestValuesOfInterest(problem),...
             cocoProblemGetLargestValuesOfInterest(problem),...
             cocoProblemGetNumberOfIntegerVariables(problem),...
