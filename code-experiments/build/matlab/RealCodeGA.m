@@ -94,17 +94,18 @@ function RealCodeGA (problem, lower_bounds, upper_bounds, dimension, num_constra
 
         % Calculating the temporary population objective function values
         for iii=1:1:population_size
-            F(iii)= myobjfunc(temp_population(iii,:));
+            F(iii)= myobjfunc(temp_population(iii,:), dimension);
         end
         % sorting for the next generation and selection of the population best  
         S_population(:,1:n_variables)= temp_population;
         S_population(:,n_variables+1)=F(:,:);
         S_population= sortrows(S_population,n_variables+1);
         
-        Best_F(ii)= S_population(1,dimension+1);
+        kk = dimension;
+        Best_F(ii, :)= S_population(1,1:n_variables);
         
-        kk = num_integer_vars;
-        x(1:kk) = Best_F(ii)
+       
+        x(1:kk) = Best_F(ii, : );
         if num_constraints > 0
             cocoEvaluateConstraint(problem, x);
         end
