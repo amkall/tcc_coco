@@ -25,13 +25,17 @@ function RealCodeGA (problem, lower_bounds, upper_bounds, dimension, num_constra
         for n=1:1:n_variables
         population(i,n)= unifrnd(LB(1,n),UB(1,n));
         end
-        F(i)= myobjfunc(population(i,:), dimension);
+        
+        w(1:dimension) = population(i, 1:dimension);
+        F(i)= cocoEvaluateFunction(problem, w);
     end
     
     % sorting of the population  
     S_population(:,1:n_variables)= population(:,:);
     S_population(:,n_variables+1)=F;
-    S_population= sortrows(S_population,n_variables+1);
+    %S_population= sortrows(S_population,n_variables+1);
+    S_population= sortrows(S_population,n_variables+1,'descend');
+
     
     % Generation
     for ii=1:1:generation
@@ -104,6 +108,7 @@ function RealCodeGA (problem, lower_bounds, upper_bounds, dimension, num_constra
         S_population(:,1:n_variables)= temp_population;
         S_population(:,n_variables+1)=F(:,:);
         %S_population= sortrows(S_population,n_variables+1);
+        S_population= sortrows(S_population,n_variables+1,'descend');
         
         %Best_F(ii)= S_population(1,dimension+1);
         
